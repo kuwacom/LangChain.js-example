@@ -29,12 +29,14 @@ const chain = createChain();
 
     const prompt = ChatPromptTemplate.fromMessages([
         [
-            "system", `あなたは私が送ったメッセージをすべて覚えている親切なAIアシスタントです。`,
+            // "system", `あなたは私が送ったメッセージをすべて覚えている親切なAIアシスタントです。`,
+            // "system", "あなたはエージェント型チャットボットです。\n発言は100字以内で短く返信してください。\n返信後は新しいメッセージまで何もしないでください。",
+            "system", "あなたはエージェント型チャットボットです。\n返信後は新しいメッセージまで何もしないでください。",
         ],
         ["placeholder", "{chat_history}"],
         // この placeholder は以下のコードを実装するのと同じ
         // new MessagesPlaceholder("chat_history"),
-        ["human", "{input}"],
+        ["human", "Human: {input}\nAI:"],
     ]);
 
     const pchain = prompt.pipe(chain);
@@ -103,7 +105,7 @@ const chain = createChain();
     //          "発言は100字以内で短く返してください。\n\n"
     //      ),
     //      MessagesPlaceholder(variable_name="today_history"),
-    //      HumanMessagePromptTemplate.from_template("{input}")
+    //      HumanMessagePromptTemplate.from_template("Human: {input}\nAI:")
     //  ])
     //
     //  chain = prompt | llm
