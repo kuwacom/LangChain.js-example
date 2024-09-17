@@ -99,6 +99,7 @@ const chain = createChain();
     //      SystemMessagePromptTemplate.from_template(
     //          "あなたはエージェント型チャットボットです。\n"
     //          "過去の会話を参照しながら対話者と会話することができます。\n"
+    //          "{past_chats_context}"  # 追加のテンプレート内オプション ここに過去の会話内容を挿入 
     //          "発言は100字以内で短く返してください。\n\n"
     //      ),
     //      MessagesPlaceholder(variable_name="today_history"),
@@ -139,7 +140,7 @@ const chain = createChain();
             const stream = await withMessageHistory.stream(
                 {
                     input: input,
-                    // past_chats_context: "",          
+                    // past_chats_context: "", // 追加のテンプレート内オプションはこれで代入可能        
                 },
                 config
             );
