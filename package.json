@@ -1,0 +1,25 @@
+{
+  "name": "langchain.js-test",
+  "version": "1.0.0",
+  "description": "LangChain.js test with TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "wintest": "title %npm_config_id% && tsc && tsc-alias && node ./dist/index.js",
+    "test": "tsc && tsc-alias && node ./dist/index.js",
+    "build": "tsc && tsc-alias",
+    "winstart": "title %npm_config_id% && node ./dist/index.js",
+    "start": "node ./dist/index.js"
+  },
+  "keywords": [
+    "typescript",
+    "langchain"
+  ],
+  "author": "kuwa",
+  "license": "MIT",
+  "dependencies": {
+    "@langchain/core": "^0.3.1",
+    "dotenv": "^16.4.5",
+    "langchain": "^0.3.2",
+    "tslog": "^4.9.3"
+  }
+}
