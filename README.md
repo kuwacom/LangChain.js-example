@@ -1,4 +1,2 @@
 # What Is This
-TypeScriptの基本的なテンプレート
-
-コピー等してお使いください
+nodejs+TypeScriptでLangChain.jsを利用してinvokeする例
