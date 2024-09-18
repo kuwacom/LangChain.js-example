@@ -31,7 +31,7 @@ export default class Llama3Chat {
         this.systemMessage = systemMessage;
 
         this.maxToken = options.maxToken ?? 1024; // トークンを使った制限はまだ実装不可
-        this.maxHistory = options.maxHistory ?? 15; // llmに渡すメッセージ履歴の最大数
+        this.maxHistory = options.maxHistory ?? 30; // llmに渡すメッセージ履歴の最大数
     }
 
     public setSystemMessage(message: string) {
@@ -57,7 +57,7 @@ export default class Llama3Chat {
     public getMessageStruct(): MessageHistory {
         return [
             (["system", this.systemMessage] as MessageEntry),
-            ...this.messageHistory
+            ...this.messageHistory.slice(-this.maxHistory), // maxHistory 分送る
         ]
     }
 
@@ -83,7 +83,7 @@ export default class Llama3Chat {
 
         const promptArray = [
             llmInstToken.begin_of_text, // プロンプト始まりのトークン
-            ...promptBaseArray.slice(promptBaseArray.length - this.maxHistory), // maxHistory 分送る
+            ...promptBaseArray,
             `${llmInstToken.start_header_id}assistant${llmInstToken.end_header_id}`
         ]
 
@@ -110,7 +110,7 @@ export class EasyLlama3Chat {
         "発言は完結に短く人間のように返信してください。";
 
         this.maxToken = options.maxToken ?? 1024; // トークンを使った制限はまだ実装不可
-        this.maxHistory = options.maxHistory ?? 15; // llmに渡すメッセージ履歴の最大数
+        this.maxHistory = options.maxHistory ?? 30; // llmに渡すメッセージ履歴の最大数
     }
 
     public setSystemMessage(message: string) {
@@ -136,7 +136,7 @@ export class EasyLlama3Chat {
     public getMessageStruct(): MessageHistory {
         return [
             (["system", this.systemMessage] as MessageEntry),
-            ...this.messageHistory
+            ...this.messageHistory.slice(-this.maxHistory), // maxHistory 分送る
         ]
     }
 
@@ -162,7 +162,7 @@ export class EasyLlama3Chat {
 
         const promptArray = [
             llmInstToken.begin_of_text, // プロンプト始まりのトークン
-            ...promptBaseArray.slice(promptBaseArray.length - this.maxHistory), // maxHistory 分送る
+            ...promptBaseArray,
             `${llmInstToken.start_header_id}assistant${llmInstToken.end_header_id}`
         ]
 
