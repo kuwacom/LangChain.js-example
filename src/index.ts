@@ -8,7 +8,8 @@ import { RemoteRunnable } from "langchain/runnables/remote";
 import { BaseChatMessageHistory, BaseListChatMessageHistory, InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
+import Llama3Chat from './utils/llama3Chat';
 
 const createChain = () => {
     return new RemoteRunnable({
@@ -16,6 +17,51 @@ const createChain = () => {
     });
 };
 const chain = createChain();
+
+// llama3 専用 プロンプト
+// https://www.llama.com/docs/model-cards-and-prompt-formats/meta-llama-3/
+// LangServe 側はllmを起動しているのみの場合
+{
+    // LangServe 側の例
+    //
+    //  add_routes(
+    //      app,
+    //      llm, # modelをそのまま入れる
+    //      path="/llama3"
+    //  )
+
+    
+    const llama3Chat = new Llama3Chat("なの", "くわ")
+    const handleUserInput = async(input: string)=>{
+        llama3Chat.addUserMessage(input);
+
+        const stream = await chain.stream(llama3Chat.getPrompt(), { timeout: 300000 });
+        
+        const result = [];
+        for await (const chunk of stream) {
+            process.stdout.write(chunk as Buffer);
+            // console.log((chunk as Buffer).toString());
+            result.push(chunk);
+        }
+        
+        llama3Chat.addAssistantMessage(result.join(""));
+    }
+    
+    const startChat = async() => {
+        console.log('チャットを開始します。終了するには "exit" と入力してください。');
+    
+        while (true) {
+            const input = readlineSync.question('\nあなた > ');
+            if (input.toLowerCase() === 'exit') {
+                break;
+            }
+            process.stdout.write("\n")
+            await handleUserInput(input);
+        }
+    };
+    
+    startChat();
+}
 
 // LangServe 側はllmを起動しているのみの場合
 {
@@ -85,11 +131,12 @@ const chain = createChain();
                 break;
             }
             logger.debug(input)
+            process.stdout.write("\n")
             await handleUserInput(input);
         }
     };
     
-    startChat();
+    // startChat();
 }
 
 
