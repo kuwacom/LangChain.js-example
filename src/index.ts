@@ -31,19 +31,37 @@ const chain = createChain();
     //  )
 
     
-    const llama3Chat = new Llama3Chat("なの", "くわ")
+    const assistantName = "なの";
+    const userName = "くわ";    
+
+    const llama3Chat = new Llama3Chat("プロンプトの初期指示はここで")
+    
     const handleUserInput = async(input: string)=>{
         llama3Chat.addUserMessage(input);
-
+        llama3Chat.setSystemMessage( // プロンプトの指示を更新
+            `あなたの名前は ${assistantName} です。\n`+
+            `あなたはユーザーからの質問を回答する親切なアシスタントです。\n`+
+            "発言は完結に返信してください。\n"+
+            `あなたは今、${userName} という名前のユーザーとチャットをしています。\n`+
+            `現在時刻: ${new Date().toString()}`
+        )
+        
         const stream = await chain.stream(llama3Chat.getPrompt(), { timeout: 300000 });
         
+        process.stdout.write("-=-=-=-=-=-=-=-=-=-=-=-=-\nアシスタント> ")
         const result = [];
+        let firstTextFlag = false;
         for await (const chunk of stream) {
+            if ((chunk as Buffer).length == 0) continue; // 何もないチャンクは無視
+            for (const byte of (chunk as Buffer)) {
+                if (byte.toString() != "\n") firstTextFlag = true; // 最初になぜか\nが沢山来るのでそれらを無視する 
+            }
+            if (firstTextFlag == false) continue;
+
             process.stdout.write(chunk as Buffer);
-            // console.log((chunk as Buffer).toString());
             result.push(chunk);
         }
-        
+        process.stdout.write("\n-=-=-=-=-=-=-=-=-=-=-=-=-")
         llama3Chat.addAssistantMessage(result.join(""));
     }
     
@@ -55,7 +73,6 @@ const chain = createChain();
             if (input.toLowerCase() === 'exit') {
                 break;
             }
-            process.stdout.write("\n")
             await handleUserInput(input);
         }
     };
