@@ -13,7 +13,7 @@ import Llama3Chat from './utils/llama3Chat';
 
 const createChain = () => {
     return new RemoteRunnable({
-        url: process.env.API_ENDPOINT + "/llama3",
+        url: process.env.LANGSERVE_API_ENDPOINT + "/llama3",
     });
 };
 const chain = createChain();
