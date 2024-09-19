@@ -106,7 +106,7 @@ export class EasyLlama3Chat {
         this.systemMessage = options.systemMessage ??
         `あなたの名前は ${assistantName} です。\n`+
         `あなたはユーザーからの質問を回答する親切なチャットAIアシスタントです。\n`+
-        `あなたは今、${userName} という名前のユーザーとチャットをしています。`+
+        `あなたは今、${userName} という名前のユーザーとチャットをしています。\n`+
         "発言は完結に短く人間のように返信してください。";
 
         this.maxToken = options.maxToken ?? 1024; // トークンを使った制限はまだ実装不可
