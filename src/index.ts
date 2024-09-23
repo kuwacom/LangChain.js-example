@@ -4,15 +4,13 @@ import logger from "@/utils/logger";
 
 import readlineSync from 'readline-sync';
 
-import { RemoteRunnable } from "langchain/runnables/remote";
 import { BaseChatMessageHistory, BaseListChatMessageHistory, InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
-import { ChatManager, createLlama3Chain } from './utils/langChain';
+import { ChatManager, createLlama3Runnable } from './utils/langChain';
 import Llama3Chat from './utils/chat/llama3Chat';
 
-const chain = createLlama3Chain();
+const runnable = createLlama3Runnable();
 
 // llama3 専用 プロンプト
 // https://www.llama.com/docs/model-cards-and-prompt-formats/meta-llama-3/
@@ -33,6 +31,7 @@ const chain = createLlama3Chain();
     const llama3Chat = ChatManager.createChat<Llama3Chat>(
         "test",
         new Llama3Chat(
+            runnable,
             "", // システムメッセージは都度変更するので、ここでは定義しない
             {
                 maxHistory: 30
@@ -68,20 +67,14 @@ const chain = createLlama3Chain();
         const stream = await chain.stream(llama3Chat?.getPrompt(), { timeout: 300000 });
         
         process.stdout.write(`-=-=-=-=-=-=-=-=-=-=-=-=-\n${assistantName}> `)
-        const buffer = [];
-        let firstTextFlag = false;
-        for await (const chunk of stream) {
-            if ((chunk as Buffer).length == 0) continue; // 何もないチャンクは無視
-            for (const byte of (chunk as Buffer)) {
-                if (byte.toString() != "\n") firstTextFlag = true; // 最初になぜか\nが沢山来るのでそれらを無視する 
-            }
-            if (firstTextFlag == false) continue;
 
-            process.stdout.write(chunk as Buffer);
-            buffer.push(chunk);
-        }
+        const result = await llama3Chat?.invoke(llama3Chat?.getPrompt(), (chunk) => {
+            process.stdout.write(chunk);
+            return chunk;
+        });
+
         process.stdout.write("\n-=-=-=-=-=-=-=-=-=-=-=-=-");
-        const result = buffer.join("").toString();
+        if (!result) return;
         llama3Chat?.addAssistantMessage(result);
     }
     
@@ -129,7 +122,7 @@ const chain = createLlama3Chain();
         ["human", "Human: {input}\nAI:"],
     ]);
 
-    const pchain = prompt.pipe(chain);
+    const pchain = prompt.pipe(runnable);
 
     const messageHistories: Record<string, InMemoryChatMessageHistory> = {};
     const withMessageHistory = new RunnableWithMessageHistory({
@@ -209,7 +202,7 @@ const chain = createLlama3Chain();
     
     const messageHistories: Record<string, InMemoryChatMessageHistory> = {};
     const withMessageHistory = new RunnableWithMessageHistory({
-        runnable: chain,
+        runnable: runnable,
         getMessageHistory: async (sessionId) => {
             if (messageHistories[sessionId] === undefined) {
                 messageHistories[sessionId] = new InMemoryChatMessageHistory();
@@ -270,7 +263,7 @@ const chain = createLlama3Chain();
 
 
 async function getLlama3() {
-    const result = await chain.invoke({
+    const result = await runnable.invoke({
         input: "こんにちは！今日は何曜日ですか？",
         past_chats_context: " ",
         today_history: []
@@ -279,7 +272,7 @@ async function getLlama3() {
 }
 
 async function streamLlama3() {
-    const stream = await chain.stream({
+    const stream = await runnable.stream({
         input: "こんにちは！今日は何曜日ですか？",
         past_chats_context: " ",
         today_history: []
