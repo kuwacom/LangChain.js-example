@@ -72,7 +72,7 @@ export class Gemma2CharacterMultiUserChat extends ChatBase {
         const promptArray = [
             Gemma2InstToken.bos, // プロンプト始まりのトークン
             ...promptBaseArray,
-            `${Gemma2InstToken.start_of_turn}model\n`
+            `${Gemma2InstToken.start_of_turn}model\n<${this.characterName}>`
         ]
 
         return promptArray.join("")
